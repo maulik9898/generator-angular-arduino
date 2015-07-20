@@ -10,6 +10,11 @@ Source code: https://github.com/lasselukkari/angular-arduino-demo
 
 ## Usage
 
+First, you'll need to install `yo` and other required tools:
+```
+npm install -g yo bower grunt-cli
+```
+
 Install `generator-angular-arduino`:
 ```
 npm install -g generator-angular-arduino
@@ -43,9 +48,13 @@ Run `grunt` for building + uploading, `grunt serve` for ui preview. See generate
 
 **Server**
 
-* Platform presets: `Uno`, `Mega`, `Due`, `ESP8266`,
+* Platform presets: `Uno`, `Mega`, `Due`, `ESP8266`
 
 Custom platform options can be set manually.
+
+Also tested on Teensy 3.1 with the WIZ820io but the project has to be uploaded manually using the IDE.
+
+Àrduino Uno is barely usable. On Uno the example project consumes almost all available memory resources. Remove Serial lib to free some space.
 
 ## Injection
 
