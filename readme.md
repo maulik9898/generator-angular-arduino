@@ -30,12 +30,16 @@ Run `yo angular-arduino`, optionally passing an app name:
 yo angular-arduino [app-name]
 ```
 
-Run `grunt` for building + uploading, `grunt serve` for ui preview. See generated grunt file for more available tasks.
+Run `grunt` for building + uploading, `grunt serve` for ui preview.
+
+To build the project run `grunt build`. The built project in dist/server is compatible with the Arduino IDE.
+
+See generated grunt file for more available tasks.
 
 ## Prerequisites
 
 * Arduino IDE 1.6.5 or later
-* aWOT - Download [aWOT](https://github.com/lasselukkari/aWOT) either to your Arduino libraries folder or copy the .h and .cpp files to the server directory.
+* [aWOT](https://github.com/lasselukkari/aWOT) - Download [aWOT](https://github.com/lasselukkari/aWOT) either to your Arduino libraries folder or copy the .h and .cpp files to the server directory.
 
 ## Supported Configurations
 
@@ -54,7 +58,9 @@ Custom platform options can be set manually.
 
 Also tested on Teensy 3.1 with the WIZ820io but the project has to be uploaded manually using the IDE.
 
-Àrduino Uno is barely usable. On Uno the example project consumes almost all available memory resources. Remove Serial lib to free some space.
+Arduino Uno is barely usable. On Uno the example project consumes almost all available memory resources. Remove Serial lib to free some space.
+
+To enable the ESP8266 refer to [github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
 
 ## Injection
 
