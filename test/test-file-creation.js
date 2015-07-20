@@ -7,7 +7,7 @@ var expect = chai.expect;
 var fs = require('fs-extra');
 var exec = require('child_process').exec;
 
-describe('angular-fullstack generator', function () {
+describe('angular-arduino generator', function () {
   var gen, defaultOptions = {
     script: 'js',
     markup: 'html',
@@ -15,17 +15,17 @@ describe('angular-fullstack generator', function () {
     router: 'uirouter',
     bootstrap: true,
     uibootstrap: true,
-    mongoose: true,
-    auth: true,
-    oauth: [],
-    socketio: true
+    package: 'esp8266',
+    arch: 'esp8266',
+    board: 'esp8266',
+    serialPort: 'MOCK_PORT'
   }, dependenciesInstalled = false;
 
   function generatorTest(generatorType, name, mockPrompt, callback) {
     gen.run({}, function () {
       var afGenerator;
       var deps = [path.join('../..', generatorType)];
-      afGenerator = helpers.createGenerator('angular-fullstack:' + generatorType, deps, [name]);
+      afGenerator = helpers.createGenerator('angular-arduino:' + generatorType, deps, [name]);
 
       helpers.mockPrompt(afGenerator, mockPrompt);
       afGenerator.run([], function () {
@@ -49,7 +49,7 @@ describe('angular-fullstack generator', function () {
         return done(err);
       }
 
-      gen = helpers.createGenerator('angular-fullstack:app', deps);
+      gen = helpers.createGenerator('angular-arduino:app', deps);
       gen.options['skip-install'] = true;
       done();
     }.bind(this));
@@ -69,10 +69,10 @@ describe('angular-fullstack generator', function () {
         helpers.mockPrompt(gen, defaultOptions);
       });
 
-      it('should run client tests successfully', function(done) {
+      it('should run tests successfully', function(done) {
         this.timeout(60000);
         gen.run({}, function () {
-          exec('grunt test:client', function (error, stdout, stderr) {
+          exec('grunt test', function (error, stdout, stderr) {
             expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Executed 1 of 1 SUCCESS');
             done();
           });
@@ -89,30 +89,10 @@ describe('angular-fullstack generator', function () {
         });
       });
 
-      it('should run server tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-
-      it('should run server tests successfully with generated endpoint', function(done) {
-        this.timeout(60000);
-        generatorTest('endpoint', 'foo', {}, function() {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-
       it('should use existing config if available', function(done) {
         this.timeout(60000);
         fs.copySync(__dirname + '/fixtures/.yo-rc.json', __dirname + '/temp/.yo-rc.json');
-        var gen = helpers.createGenerator('angular-fullstack:app', [
+        var gen = helpers.createGenerator('angular-arduino:app', [
           '../../app',
           [
             helpers.createDummyGenerator(),
@@ -131,18 +111,6 @@ describe('angular-fullstack generator', function () {
           done();
         });
       });
-
-//      it('should run e2e tests successfully', function(done) {
-//        this.timeout(80000);
-//        gen.run({}, function () {
-//          exec('npm run update-webdriver', function (error, stdout, stderr) {
-//            exec('grunt test:e2e', function (error, stdout, stderr) {
-//              expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Done, without errors.');
-//              done();
-//            });
-//          });
-//        })
-//      });
     });
 
     describe('with Babel ES6 preprocessor', function() {
@@ -156,10 +124,10 @@ describe('angular-fullstack generator', function () {
         });
       });
 
-      it('should run client tests successfully', function(done) {
+      it('should run tests successfully', function(done) {
         this.timeout(60000);
         gen.run({}, function () {
-          exec('grunt test:client', function (error, stdout, stderr) {
+          exec('grunt test', function (error, stdout, stderr) {
             expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Executed 1 of 1 SUCCESS');
             done();
           });
@@ -175,63 +143,9 @@ describe('angular-fullstack generator', function () {
           });
         });
       });
-
-      it('should run server tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
     });
 
 
-    describe('with other preprocessors and oauth', function() {
-      beforeEach(function() {
-        helpers.mockPrompt(gen, {
-          script: 'coffee',
-          markup: 'jade',
-          stylesheet: 'less',
-          router: 'uirouter',
-          mongoose: true,
-          auth: true,
-          oauth: ['twitterAuth', 'facebookAuth', 'googleAuth'],
-          socketio: true
-        });
-      });
-
-      it('should run client tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:client', function (error, stdout, stderr) {
-            expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Executed 1 of 1 SUCCESS');
-            done();
-          });
-        });
-      });
-
-      it('should pass jshint', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt jshint', function (error, stdout, stderr) {
-            expect(stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-
-      it('should run server tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-    });
 
     describe('with other preprocessors and no server options', function() {
       beforeEach(function(done) {
@@ -239,19 +153,15 @@ describe('angular-fullstack generator', function () {
           script: 'coffee',
           markup: 'jade',
           stylesheet: 'stylus',
-          router: 'ngroute',
-          mongoose: false,
-          auth: false,
-          oauth: [],
-          socketio: false
+          router: 'ngroute'
         });
         done();
       });
 
-      it('should run client tests successfully', function(done) {
+      it('should run tests successfully', function(done) {
         this.timeout(60000);
         gen.run({}, function () {
-          exec('grunt test:client', function (error, stdout, stderr) {
+          exec('grunt test', function (error, stdout, stderr) {
             expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Executed 1 of 1 SUCCESS');
             done();
           });
@@ -263,16 +173,6 @@ describe('angular-fullstack generator', function () {
         gen.run({}, function () {
           exec('grunt jshint', function (error, stdout, stderr) {
             expect(stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-
-      it('should run server tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
             done();
           });
         });
@@ -285,11 +185,7 @@ describe('angular-fullstack generator', function () {
           script: 'js',
           markup: 'html',
           stylesheet: 'css',
-          router: 'ngroute',
-          mongoose: false,
-          auth: false,
-          oauth: [],
-          socketio: false
+          router: 'ngroute'
         });
         done();
       });
@@ -297,7 +193,7 @@ describe('angular-fullstack generator', function () {
       it('should run client tests successfully', function(done) {
         this.timeout(60000);
         gen.run({}, function () {
-          exec('grunt test:client', function (error, stdout, stderr) {
+          exec('grunt test', function (error, stdout, stderr) {
             expect(stdout, 'Client tests failed \n' + stdout ).to.contain('Executed 1 of 1 SUCCESS');
             done();
           });
@@ -314,38 +210,27 @@ describe('angular-fullstack generator', function () {
         });
       });
 
-      it('should run server tests successfully', function(done) {
-        this.timeout(60000);
-        gen.run({}, function () {
-          exec('grunt test:server', function (error, stdout, stderr) {
-            expect(stdout, 'Server tests failed (do you have mongoDB running?) \n' + stdout).to.contain('Done, without errors.');
-            done();
-          });
-        });
-      });
-
       it('should generate expected files', function (done) {
         helpers.mockPrompt(gen, defaultOptions);
 
         gen.run({}, function () {
           helpers.assertFile([
-            'client/.htaccess',
             'client/favicon.ico',
             'client/robots.txt',
             'client/app/main/main.scss',
             'client/app/main/main.html',
             'client/index.html',
             'client/.jshintrc',
-            'client/assets/images/yeoman.png',
+            'client/assets/images/yeoman.jpg',
             '.bowerrc',
             '.editorconfig',
             '.gitignore',
             'Gruntfile.js',
             'package.json',
             'bower.json',
-            'server/app.js',
-            'server/config/express.js',
-            'server/api/thing/index.js']);
+            'server/server.ino',
+            'server/thing.controller.ino',
+            'server/thing.router.ino']);
           done();
         });
       });

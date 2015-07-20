@@ -137,11 +137,7 @@ module.exports = function (grunt) {
         stylesheet: 'sass',
         router: 'uirouter',
         bootstrap: true,
-        uibootstrap: true,
-        mongoose: true,
-        auth: true,
-        oauth: ['googleAuth', 'twitterAuth'],
-        socketio: true
+        uibootstrap: true
       };
 
       var deps = [
@@ -152,7 +148,7 @@ module.exports = function (grunt) {
         ]
       ];
 
-      var gen = helpers.createGenerator('angular-fullstack:app', deps);
+      var gen = helpers.createGenerator('angular-arduino:app', deps);
 
       helpers.mockPrompt(gen, options);
       gen.run({}, function () {
@@ -160,44 +156,6 @@ module.exports = function (grunt) {
       });
 
       return deferred.promise;
-    }
-  });
-
-  grunt.registerTask('releaseDemoBuild', 'builds and releases demo', function () {
-    var done = this.async();
-
-    shell.cd(grunt.config('config').demo);
-
-    Q()
-      .then(gruntBuild)
-      .then(gruntRelease)
-      .then(function() {
-        shell.cd('../');
-      })
-      .catch(function(msg){
-        grunt.fail.warn(msg || 'failed to release demo')
-      })
-      .finally(done);
-
-    function run(cmd) {
-      var deferred = Q.defer();
-      var generator = shell.exec(cmd, {async:true});
-      generator.stdout.on('data', function (data) {
-        grunt.verbose.writeln(data);
-      });
-      generator.on('exit', function (code) {
-        deferred.resolve();
-      });
-
-      return deferred.promise;
-    }
-
-    function gruntBuild() {
-      return run('grunt');
-    }
-
-    function gruntRelease() {
-      return run('grunt buildcontrol:heroku');
     }
   });
 
@@ -246,12 +204,6 @@ module.exports = function (grunt) {
   grunt.registerTask('demo', [
     'clean:demo',
     'generateDemo'
-  ]);
-
-  grunt.registerTask('releaseDemo', [
-    'demo',
-    'releaseDemoBuild',
-    'buildcontrol:release'
   ]);
 
   //grunt.registerTask('default', ['bump', 'changelog', 'stage', 'release']);

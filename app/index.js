@@ -6,6 +6,7 @@ var genUtils = require('../util.js');
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var wiredep = require('wiredep');
+var serialPort = require("serialport");
 
 var AngularFullstackGenerator = yeoman.generators.Base.extend({
 
@@ -28,7 +29,7 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
 
   info: function () {
     this.log(this.yeoman);
-    this.log('Out of the box I create an AngularJS app with an Express server.\n');
+    this.log('Out of the box I create an AngularJS app with an aWOT server.\n');
   },
 
   checkForConfig: function() {
@@ -39,19 +40,9 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
         type: "confirm",
         name: "skipConfig",
         message: "Existing .yo-rc configuration found, would you like to use it?",
-        default: true,
+        default: true
       }], function (answers) {
         this.skipConfig = answers.skipConfig;
-
-        // NOTE: temp(?) fix for #403
-        if(typeof this.oauth==='undefined') {
-          var strategies = Object.keys(this.filters).filter(function(key) {
-            return key.match(/Auth$/) && key;
-          });
-
-          if(strategies.length) this.config.set('oauth', true);
-        }
-
         cb();
       }.bind(this));
     } else {
@@ -129,87 +120,146 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
       cb();
       }.bind(this));
   },
-
-  serverPrompts: function() {
+  idePath: function() {
     if(this.skipConfig) return;
     var cb = this.async();
     var self = this;
 
-    this.log('\n# Server\n');
+    this.log('\n# Arduino IDE\n');
 
-    this.prompt([{
-      type: "confirm",
-      name: "mongoose",
-      message: "Would you like to use mongoDB with Mongoose for data modeling?"
-    }, {
-      type: "confirm",
-      name: "auth",
-      message: "Would you scaffold out an authentication boilerplate?",
-      when: function (answers) {
-        return answers.mongoose;
-      }
-    }, {
-      type: 'checkbox',
-      name: 'oauth',
-      message: 'Would you like to include additional oAuth strategies?',
-      when: function (answers) {
-        return answers.auth;
-      },
-      choices: [
-        {
-          value: 'googleAuth',
-          name: 'Google',
-          checked: false
-        },
-        {
-          value: 'facebookAuth',
-          name: 'Facebook',
-          checked: false
-        },
-        {
-          value: 'twitterAuth',
-          name: 'Twitter',
-          checked: false
+      self.prompt({
+        type: "input",
+        name: "idePath",
+        message: "Path to Arduino IDE",
+        default: "/Applications/Arduino.app/Contents/MacOS/arduino"
+      }, function (answer) {
+        self.idePath = answer.idePath;
+        cb();
+      });
+  },
+  serialPrompt: function() {
+    if(this.skipConfig) return;
+    var cb = this.async();
+    var self = this;
+
+    this.log('\n# Serial port\n');
+
+    serialPort.list(function (err, ports) {
+      var portChoices =  ports.map(function(port) {
+        return port.comName;
+      });
+
+      portChoices.push("custom");
+
+      self.prompt({
+        type: "list",
+        name: "port",
+        message: "Please select serial port",
+        choices: portChoices
+      }, function (answer) {
+
+        if (answer.port === 'custom'){
+          self.prompt({
+            type: "input",
+            name: "port",
+            message: "Port"
+          }, function (answer) {
+            self.serialPort = answer.port;
+            cb();
+          });
+        } else {
+          self.serialPort = answer.port;
+          cb();
         }
-      ]
-    }, {
-      type: "confirm",
-      name: "socketio",
-      message: "Would you like to use socket.io?",
-      // to-do: should not be dependent on mongoose
-      when: function (answers) {
-        return answers.mongoose;
-      },
-      default: true
-    }], function (answers) {
-      if(answers.socketio) this.filters.socketio = true;
-      if(answers.mongoose) this.filters.mongoose = true;
-      if(answers.auth) this.filters.auth = true;
-      if(answers.oauth) {
-        if(answers.oauth.length) this.filters.oauth = true;
-        answers.oauth.forEach(function(oauthStrategy) {
-          this.filters[oauthStrategy] = true;
-        }.bind(this));
-      }
+      });
+    });
+  },
+  platformPrompts: function() {
+    if(this.skipConfig) return;
+    var cb = this.async();
+    var self = this;
 
-      cb();
-    }.bind(this));
+    this.log('\n# Target platform\n');
+
+    serialPort.list(function (err, ports) {
+      self.prompt({
+        type: "list",
+        name: "platform",
+        default: 3,
+        message: "What is your target platform?",
+        choices: [ "Uno", "Mega", "Due (Programming Port)", "ESP8266", "custom"],
+        filter: function( val ) { console.log(val); return val.toLowerCase(); }
+      }, function (answer) {
+
+        if (answer.platform === 'custom'){
+          self.prompt([{
+            type: "input",
+            name: "package",
+            message: "Package",
+            default: "arduino"
+          }, {
+            type: "input",
+            name: "arch",
+            message: "Architecture",
+            default: "avr"
+          },{
+            type: "input",
+            name: "board",
+            message: "Board",
+            default: "uno"
+          },{
+            type: "input",
+            name: "parameters",
+            message: "Comma-separated list of boards specific parameters"
+          }], function (answers) {
+            self.package = answers.package;
+            self.arch = answers.arch;
+            self.board = answers.board;
+            cb();
+          });
+        } else {
+          if (answer.platform === 'uno'){
+            self.package = 'arduino';
+            self.arch = 'avr';
+            self.board = 'uno';
+          } else if (answer.platform === 'mega'){
+            self.package = 'arduino';
+            self.arch = 'avr';
+            self.board = 'mega';
+          } else if (answer.platform === 'due'){
+            self.package = 'arduino';
+            self.arch = 'sam';
+            self.board = 'arduino_due_x_dbg';
+          } else if (answer.platform === 'esp8266'){
+            self.package = 'esp8266';
+            self.arch = 'esp8266';
+            self.board = 'esp8266';
+          }
+          cb();
+        }
+      });
+    });
   },
 
   saveSettings: function() {
     if(this.skipConfig) return;
     this.config.set('insertRoutes', true);
-    this.config.set('registerRoutesFile', 'server/routes.js');
-    this.config.set('routesNeedle', '// Insert routes below');
+    this.config.set('registerRoutesFile', 'server/server.ino');
+    this.config.set('routesNeedle', '// other routers');
 
     this.config.set('routesBase', '/api/');
     this.config.set('pluralizeRoutes', true);
 
-    this.config.set('insertSockets', true);
-    this.config.set('registerSocketsFile', 'server/config/socketio.js');
-    this.config.set('socketsNeedle', '// Insert sockets below');
-
     this.config.set('filters', this.filters);
+
+    this.config.set('package', this.package);
+    this.config.set('arch', this.arch);
+    this.config.set('board', this.board);
+
+    this.config.set('serialPort', this.serialPort);
+
+    this.config.set('idePath', this.idePath);
+
     this.config.forceSave();
   },
 
@@ -250,13 +300,19 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
       uibootstrap: true
     });
 
+    this.package = this.config.get('package');
+    this.arch = this.config.get('arch');
+    this.board = this.config.get('board');
+
+    this.serialPort = this.config.get('serialPort');
+
+    this.idePath = this.config.get('idePath');
+
     var angModules = [
-      "'ngCookies'",
       "'ngResource'",
       "'ngSanitize'"
     ];
     if(this.filters.ngroute) angModules.push("'ngRoute'");
-    if(this.filters.socketio) angModules.push("'btford.socket-io'");
     if(this.filters.uirouter) angModules.push("'ui.router'");
     if(this.filters.uibootstrap) angModules.push("'ui.bootstrap'");
 

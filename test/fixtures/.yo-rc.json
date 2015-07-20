@@ -1,5 +1,5 @@
 {
-  "generator-angular-fullstack": {
+  "generator-angular-arduino": {
     "insertRoutes": "true",
     "registerRoutesFile": "server/routes.js",
     "routesNeedle": "// Insert routes below",
