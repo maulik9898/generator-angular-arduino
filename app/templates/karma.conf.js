@@ -16,11 +16,10 @@ module.exports = function(config) {
       'client/bower_components/angular-mocks/angular-mocks.js',
       'client/bower_components/angular-resource/angular-resource.js',
       'client/bower_components/angular-cookies/angular-cookies.js',
-      'client/bower_components/angular-sanitize/angular-sanitize.js',
-      'client/bower_components/angular-route/angular-route.js',<% if(filters.uibootstrap) { %>
+      'client/bower_components/angular-sanitize/angular-sanitize.js',<% if(filters.ngroute) { %>
+      'client/bower_components/angular-route/angular-route.js',<% } if(filters.uibootstrap) { %>
       'client/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',<% } %>
-      'client/bower_components/lodash/dist/lodash.compat.js',<% if(filters.socketio) { %>
-      'client/bower_components/angular-socket-io/socket.js',<% } %><% if(filters.uirouter) { %>
+      'client/bower_components/lodash/lodash.js',<% if(filters.uirouter) { %>
       'client/bower_components/angular-ui-router/release/angular-ui-router.js',<% } %>
       'client/app/app.js',
       'client/app/app.coffee',
