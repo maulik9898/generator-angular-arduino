@@ -52,11 +52,9 @@ See generated grunt file for more available tasks.
 
 **Server**
 
-* Platform presets: `Uno`, `Mega`, `Due`, `ESP8266`
+* Platform presets: `Uno`, `Mega`, `Due`, `Teensy3`, `ESP8266`
 
 Custom platform options can be set manually.
-
-Also tested on Teensy 3.1 with the WIZ820io but the project has to be uploaded manually using the IDE.
 
 Arduino Uno is barely usable. On Uno the example project consumes almost all available memory resources. Remove Serial lib to free some space.
 

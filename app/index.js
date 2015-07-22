@@ -185,9 +185,9 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
       self.prompt({
         type: "list",
         name: "platform",
-        default: 3,
+        default: 4,
         message: "What is your target platform?",
-        choices: [ "Uno", "Mega", "Due (Programming Port)", "ESP8266", "custom"],
+        choices: [ "Uno", "Mega", "Due (Programming Port)", "Teensy3", "ESP8266", "custom"],
         filter: function( val ) { console.log(val); return val.toLowerCase(); }
       }, function (answer) {
 
@@ -230,6 +230,10 @@ var AngularFullstackGenerator = yeoman.generators.Base.extend({
             self.package = 'arduino';
             self.arch = 'sam';
             self.board = 'arduino_due_x_dbg';
+          } else if (answer.platform === 'teensy3'){
+            self.package = 'teensy';
+            self.arch = 'avr';
+            self.board = 'teensy3';
           } else if (answer.platform === 'esp8266'){
             self.package = 'esp8266';
             self.arch = 'esp8266';

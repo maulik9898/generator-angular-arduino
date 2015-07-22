@@ -589,7 +589,8 @@ module.exports = function (grunt) {
         }
       },
       upload: {
-        options: {
+        options: {<% if(board === 'teensy3') { %>
+          preserveTempFiles: true,<% } %>
           action: 'upload'
         }
       }
